@@ -1,0 +1,17 @@
+<head>
+  <title>Notes</title>
+</head>
+
+<body>
+  {{> root }}
+</body>
+
+<template name="root">
+  {{#if isUserLoggedIn }}
+    {{> app }}
+  {{else}}
+    {{> site }}   
+  {{/if}}
+</template>
+
+
