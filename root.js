@@ -1,7 +1,7 @@
 if (Meteor.isClient) {
 
   Template.root.isUserLoggedIn = function() {
-    return false;
+    return true;
   };
 
 
