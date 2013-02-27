@@ -1,4 +1,4 @@
 meteor-notes
 ============
 
-A simple application to play around with meteor in
+A simple application demonstrating Meteor (http://meteor.com)
