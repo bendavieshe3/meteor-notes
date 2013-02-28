@@ -1,13 +1,21 @@
 <head>
-  <title>notes</title>
+  <title>Notes</title>
 </head>
 
 <body>
-  {{> hello}}
+  <h1>Notes!</h1> 
+  {{> body}}
 </body>
 
-<template name="hello">
-  <h1>Hello World!</h1>
-  {{greeting}}
-  <input type="button" value="Click" />
+<template name="body">
+  {{> noteslist }}
+</template>
+
+<template name="noteslist">
+  <h2>Notes List</h2>
+  <ul>
+    {{#each notes }}
+      <li>{{ text }}</li>
+    {{/each}}
+  </ul>
 </template>

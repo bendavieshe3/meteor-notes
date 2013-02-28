@@ -20,7 +20,128 @@ This command creates the application folder and initial meteor. You can immediat
     cd notes
     meteor
 
-Go ahead and open the application in one or more browsers (by default, this will be at http://localhost:3000) The application as it gets created doesn't do much. You will want to leave meteor running and enter further meteor commands in another terminal window. This will mean that all HTML, JavaScript, CSS and data changes will be pushed to your owner browser session(s). 
+Go ahead and open the application in one or more browsers (by default, this will be at http://localhost:3000) The application as it gets created doesn't do much. You will want to leave meteor running and enter further meteor commands in another terminal window. This will mean that all HTML, JavaScript, CSS and data changes will be pushed to your own browser session(s). 
 
 If you have the initial application running we can move on. 
+
+Gawk at Automatically Refresh Browser Sessions
+-------------------------------------------------------
+
+One the coolest features of Meteor is the automatic refreshing of browser windows in response to changes initiated on the server (or any other client for that matter). To demonstrate this, lets remove some of the page markup and sample data handling created with the application. As we save our files, our Browser updates automatically. Perform the following changes, saving periodically and observing the result:
+
+In `notes.html`:
+
+* Change the title tag texts from 'notes' to 'Notes'
+* Change the H1 tag from 'Hello World' to 'Notes!'
+* Remove the '{{ Greeting }}' variable output and the input tag
+
+In `notes.js`:
+
+* Comment out the two template function assignments. You could delete them but until you have other examples of template helpers and event assignments the examples might be useful
+
+About our Application
+---------------------
+
+My ambition in creating a Sticky Note application is to all one user or a group of users (ie a team) write and arrange notes on a board, like you would when collecting ideas or +1s from a meeting (my background is Agile Software Development, so I immediately think of Retrospectives).
+
+So our application needs to have a concept of boards as groups or containers of individual notes.
+
+Someday our application might allow users to place their notes wherever they like on the board, using whatever colour paper, tag and display their notes in a multitude of ways. But we will start much simpler and see how far we go
+
+Taking Notes
+------------
+
+Our first goal is simply to give the user (any user) to ability to create, update or delete notes on a board. To start with, our 'board' is really just a list and our 'note' is a single String of text. 
+
+Our first step is to expose a MongoDb document Collection (Mongo support comes out of the box with Meteor, see xxx for details). Our model will consist of a collection of boards, each of which will have a list of notes. 
+
+All application logic, client and server, is written in JavaScript. Open the notes.js file that was created for you and add the following to the top (outside the Meteor.isClient() conditional - we want this to run on both client and server).
+
+    var boards = new Meteor.Collection("Boards");
+
+Save the file and your browser session(s) will refresh without any visible change. A lot has happened, however. By default Meteor applications comes with two packages enabled: AutoPublish and Insecure, that make exposing data for viewing and updating as easy as the above declaration. To test this out, open your Browser's console and run some commands against the client's Mongo interface:
+
+    > boards
+      Meteor.Collection {...}
+    > boards.insert({name:"default", notes:[{text:"a note"},{text:"another note"}]});
+      "HrQkGmyCZBwNEnFYc"
+    > boards.findOne({_id:"HrQkGmyCZBwNEnFYc"});
+      Object {_id: "HrQkGmyCZBwNEnFYc", name: "default", notes: Array[2]}
+
+Meteor uses MiniMongo on the client side to provide a Mongo API into collections like boards. Using commands like the above you can insert, update and delete data straight from the console. This data is immediately synchronised across across the server and using our current configuration, all clients as well. Try opening another browser window navigating to the same page (http://localhost:3000) and running this on the console:
+
+    > boards.findOne({name:"default"});
+      Object {_id: "HrQkGmyCZBwNEnFYc", name: "default", notes: Array[2]}
+
+Displaying Notes
+----------------
+
+We are going to use the board 'default' we created above and use it by, well, default for the next while. We will only worry about a single board with one set of notes on it. Now we will display the 2 notes we created above. 
+
+Lets clean up our notes.html to provide a more structured use of templates. Meteor comes with HandleBars templates (at XXX) out of the box and that is what we will continue to use here.
+
+We will rename the 'hello' template to 'body' and move the H1 header tag outside. Inside of our new body template we will invoke a 'notes' template:
+
+    <head>
+      <title>Notes</title>
+    </head>
+
+    <body>
+      <h1>Notes!</h1> 
+      {{> body}}
+    </body>
+
+    <template name="body">
+      {{> noteslist }}
+    </template>
+
+    <template name="noteslist">
+      <h2>Notes List</h2>
+      <ul>
+        <li>Note 1</li>
+        <li>Note 2</li>
+      </ul>
+    </template>
+
+Within the 'notes' template I have an unordered list and have 2 sample note items. Save the file, observe the changes. To make the note list itself dynamic, we will need to rewrite the 'notes' template:
+
+    <template name="notes">
+      <h2>Notes List</h2>
+      <ul>
+        {{#each notes }}
+          <li>{{ text }}</li>
+        {{/each}}
+      </ul>
+    </template>
+
+We also need to supply the data to the template by means of a template helper in notes.js. Add the following function assignment in the Meteor.isClient() conditional next to the commented out JavaScript from before:
+
+    Template.noteslist.notes = function() {
+      var defaultBoard = boards.findOne({name:"default"});
+      if(defaultBoard && defaultBoard.notes) {
+        return defaultBoard.notes;
+      }
+    }
+
+Since we are assuming the board "default" will always exist, we can add a subroutine to the server to make sure this is the case when it starts. We will also log when the server starts and the results of our check to the server console (in our case, the terminal window running Meteor).
+
+Again in notes.js, add the following within the *server* conditional (Meteor.isServer()):
+
+    Meteor.startup(function () {
+
+      // code to run on server at startup
+      console.log("Notes Application Starting...")
+      
+      // make sure default board exists with sample data
+      var defaultBoard = boards.findOne({name:"default"});
+      if(!defaultBoard || defaultBoard == null) {
+        console.log("Creating new default board...");
+        boards.insert({name:"default", notes:[{text:"a note"},{text:"another note"}]});
+      } else {
+        console.log("Default board found.");      
+      }              
+    });
+
+Now if you remove the default or all the boards in the datastore (`boards.remove({})` in the browser console works well for this) and restart the server you will see our sample data is returned. 
+
 
