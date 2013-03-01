@@ -1,26 +1,46 @@
-var boards = new Meteor.Collection("Boards");
+var boardCollection = new Meteor.Collection("Boards");
+
+var Boards = function() {
+
+  var addNewNote = function(noteText) {
+      boardCollection.update({name:"default"}, {$addToSet:{notes:{text:noteText}}});
+  };  
+
+  return {
+    addNewNote: addNewNote
+  };  
+}();
+
 
 if (Meteor.isClient) {
 
-  /*
-  Template.hello.greeting = function () {
-    return "Welcome to notes.";
-  };
-
-  Template.hello.events({
-    'click input' : function () {
-      // template data, if any, is available in 'this'
-      if (typeof console !== 'undefined')
-        console.log("You pressed the button");
-    }
-  });*/
-
   Template.noteslist.notes = function() {
-    var defaultBoard = boards.findOne({name:"default"});
+    var defaultBoard = boardCollection.findOne({name:"default"});
     if(defaultBoard && defaultBoard.notes) {
       return defaultBoard.notes;
     }
-  }
+  };
+
+  
+  Template.newnote.addNewNoteFromButton = function(event, template) {
+    var input =  template.find('#new-note-input');
+    if(input.value.trim()) { Boards.addNewNote(input.value); }
+    input.value = '';    
+  };
+
+  Template.newnote.addNewNoteIfEnterPressed = function(event, template) {
+    var input =  template.find('#new-note-input');
+    if(event.which == 13) {
+      if(input.value.trim()) { Boards.addNewNote(input.value); }
+      input.value = '';
+    }
+  };
+
+  Template.newnote.events({
+    'click #new-note-button'   :  Template.newnote.addNewNoteFromButton,
+    'keypress #new-note-input' :  Template.newnote.addNewNoteIfEnterPressed,
+    'click .delete-link' :  function(e,t){ alert('here');}
+  });
 
 }
 
@@ -28,13 +48,13 @@ if (Meteor.isServer) {
   Meteor.startup(function () {
 
     // code to run on server at startup
-    console.log("Notes Application Starting...")
+    console.log("Notes Application Starting...");
     
     // make sure default board exists with sample data
-    var defaultBoard = boards.findOne({name:"default"});
+    var defaultBoard = boardCollection.findOne({name:"default"});
     if(!defaultBoard || defaultBoard == null) {
       console.log("Creating new default board...");
-      boards.insert({name:"default", notes:[{text:"a note"},{text:"another note"}]});
+      boardCollection.insert({name:"default", notes:[{text:"a note"},{text:"another note"}]});
     } else {
       console.log("Default board found.");      
     }        

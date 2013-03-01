@@ -1,21 +1,29 @@
 <head>
-  <title>Notes</title>
+  <title>Notes!</title>
 </head>
 
 <body>
-  <h1>Notes!</h1> 
+  <h1>Notes</h1> 
   {{> body}}
 </body>
 
 <template name="body">
   {{> noteslist }}
+  {{> newnote }}
 </template>
 
 <template name="noteslist">
   <h2>Notes List</h2>
-  <ul>
+  <ul id="noteslist">
     {{#each notes }}
-      <li>{{ text }}</li>
+      <li>{{ text }} <a class="delete-link" href="#">[x]</a></li>
     {{/each}}
   </ul>
+</template>
+
+<template name="newnote">
+  <p>
+    <input type="text" id="new-note-input" placeholder="Enter your new note here">
+    <button id="new-note-button">Create</button>      
+  </p>    
 </template>
