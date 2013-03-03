@@ -3,11 +3,17 @@ var boardCollection = new Meteor.Collection("Boards");
 var Boards = function() {
 
   var addNewNote = function(noteText) {
-      boardCollection.update({name:"default"}, {$addToSet:{notes:{text:noteText}}});
-  };  
+    boardCollection.update({name:"default"}, {$addToSet:{notes:{text:noteText}}});
+  };
+
+  var deleteNote = function(noteText) {
+    if(!noteText) return;
+    boardCollection.update({name:"default"}, {$pull:{notes:{text:noteText}}});
+  }
 
   return {
-    addNewNote: addNewNote
+    addNewNote: addNewNote,
+    deleteNote: deleteNote
   };  
 }();
 
@@ -20,6 +26,14 @@ if (Meteor.isClient) {
       return defaultBoard.notes;
     }
   };
+
+  Template.noteslist.deleteNoteFromLink = function(event, template) {
+    Boards.deleteNote(event.target.id);
+  };
+
+  Template.noteslist.events({
+    'click a.delete-link' :   Template.noteslist.deleteNoteFromLink
+  });
 
   
   Template.newnote.addNewNoteFromButton = function(event, template) {

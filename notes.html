@@ -16,7 +16,7 @@
   <h2>Notes List</h2>
   <ul id="noteslist">
     {{#each notes }}
-      <li>{{ text }} <a class="delete-link" href="#">[x]</a></li>
+      <li>{{ text }} <a class="delete-link" id="{{text}}" href="#">[x]</a></li>
     {{/each}}
   </ul>
 </template>

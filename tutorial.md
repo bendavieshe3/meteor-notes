@@ -256,6 +256,61 @@ There you go. Wait for the web page to refresh and add some notes using the inte
 Deleting Notes
 --------------
 The next thing to do is to allow users to delete notes. To do this we will add a delete link (in the form of a text 
-'[x]').  
+'[x]') to each note. Change the notelist template in notes.html to do this:
+
+    <template name="noteslist">
+      <h2>Notes List</h2>
+      <ul id="noteslist">
+        {{#each notes }}
+          <li>{{ text }} <a class="delete-link" id="{{text}}" href="#">[x]</a></li>
+        {{/each}}
+      </ul>
+    </template> 
+
+Notice we are adding an id to the delete link for each note equal to the text of the note itself. Since we are storing our notes as a simple list of strings in our model, we have no other means to identify our note.
+
+
+Next we will want to register a click event on the link to to be handled by a handler in notes.js:
+
+    Template.noteslist.events({
+      'click a.delete-link' :   Template.noteslist.deleteNoteFromLink
+    });
+
+And then implement the handler to call our domain object with the text of the note to delete (you'll need to define this above the event map you added just now):
+
+    Template.noteslist.deleteNoteFromLink = function(event, template) {
+      Boards.deleteNote(event.target.id);
+    };
+
+And now the domain object function: 
+
+    ...
+
+    var deleteNote = function(noteText) {
+      if(!noteText) return;
+      boardCollection.update({name:"default"}, {$pull:{notes:{text:noteText}}});
+    }
+
+    return {
+      addNewNote: addNewNote,
+      **deleteNote: deleteNote**
+    }; 
+
+    ... 
+
+The delete links should now be working - go ahead and try them out.
+
+You can now add and delete notes, if not edit them. You also have a bit of a feel about how you can structure your Meteor applications. 
+
+Things that we can still do include: 
+
+1. Editing of notes
+2. Adding some style
+3. Allowing multiple boards
+4. Allowing users to sign in
+5. Refactoring our code, and
+6. Refactoring our database model
+
+and a whole lot more. 
 
 
