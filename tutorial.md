@@ -222,20 +222,20 @@ create a new note if someone simply hits return after puting something in the fi
 
 Create these handlers above this event map:
 
-  Template.newnote.addNewNoteFromButton = function(event, template) {
-    var input =  template.find('#new-note-input');
-    if(input.value.trim()) { Boards.addNewNote(input.value); }
-    input.value = '';    
-  };
-
-  Template.newnote.addNewNoteIfEnterPressed = function(event, template) {
-    var input =  template.find('#new-note-input');
-    if(event.which == 13) {
+    Template.newnote.addNewNoteFromButton = function(event, template) {
+      var input =  template.find('#new-note-input');
       if(input.value.trim()) { Boards.addNewNote(input.value); }
-      input.value = '';
-    }
-  };
-    
+      input.value = '';    
+    };
+
+    Template.newnote.addNewNoteIfEnterPressed = function(event, template) {
+      var input =  template.find('#new-note-input');
+      if(event.which == 13) {
+        if(input.value.trim()) { Boards.addNewNote(input.value); }
+        input.value = '';
+      }
+    };
+      
 In this code we are calling yet another undefined function - Boards.addNewNote(). We could have defined this inline, but
 old habits prevent me from this minor duplication. Instead, lets create a domain object to centralise our model 
 code. Add this function outside of both client- and server- conditionals in notes.js:
@@ -293,7 +293,7 @@ And now the domain object function:
 
     return {
       addNewNote: addNewNote,
-      **deleteNote: deleteNote**
+      deleteNote: deleteNote
     }; 
 
     ... 
